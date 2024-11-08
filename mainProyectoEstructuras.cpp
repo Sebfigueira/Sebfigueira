@@ -6,7 +6,7 @@ using namespace std;
 /*UCAB CODIGO REALIZADO POR:
 Carmelo Moschella 30861195
 Sebastián Figueira 30514220
-
+Mouriss Eljawich 30773755
 */
 struct Movies{
     string name_movie;
