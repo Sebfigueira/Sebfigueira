@@ -1,7 +1,13 @@
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <sstream>
 using namespace std;
-
+/*UCAB CODIGO REALIZADO POR:
+Carmelo Moschella 30861195
+Sebastián Figueira 30514220
+Mouriss Eljawich 30773755
+*/
 struct Movies{
     string name_movie;
     int year_released;
@@ -26,11 +32,54 @@ void menu_user();
 void insert_user(Users *&, string, int, string);
 void show_users(Users *);
 void delete_a_user(Users *&, string);
-
+void leerPeliculas(const std::string& nombreArchivo, Movies&);
+void leerUsuarios(const std::string& nombreArchivo, Users& );
+void guardarPeliculasEnArchivo(Movies* Movie, const std::string& nombreArchivo);
+void guardarUsuariosEnArchivo(Users* User, const std::string& nombreArchivo);
 Movies *Movie = NULL;
 Users *User = NULL;
 
+// guardado de datos (no mover de aca o da error)(hasta donde yo probe)
+
+void guardarPeliculasEnArchivo(Movies* Movie, const std::string& nombreArchivo) {
+    std::ofstream archivo(nombreArchivo);
+    if (!archivo.is_open()) {
+        std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
+        return;
+    }
+
+    Movies* aux = Movie;
+    while (aux != NULL) {
+        archivo << aux->name_movie << "," << aux->year_released << "," << aux->genre << ","
+                << aux->length << "\n";
+        aux = aux->next;
+    }
+
+    archivo.close();
+    std::cout << "Películas guardadas exitosamente en " << nombreArchivo << std::endl;
+}
+void guardarUsuariosEnArchivo(Users* user, const std::string& nombreArchivo) {
+    std::ofstream archivo(nombreArchivo);
+    if (!archivo.is_open()) {
+        std::cerr << "No se pudo abrir el archivo para escritura." << std::endl;
+        return;
+    }
+
+    Users* aux = user;
+    while (aux != NULL) {
+        archivo << aux->mail << "," << aux->age << "," << aux->country << std::endl;
+        aux = aux->next;
+    }
+
+    archivo.close();
+    std::cout << "Usuarios guardados en " << nombreArchivo << " exitosamente." << std::endl;
+}
+
 int main(){
+    std::string nombreArchivo = "Peliculas.txt"; 
+    leerPeliculas(nombreArchivo, *Movie);
+    std::string nombreArchivo2 = "Usuarios.txt";
+    leerUsuarios(nombreArchivo2, *User);
     int option;
     do{
         cout<<"\n\tMENU\n";
@@ -52,6 +101,10 @@ int main(){
 
             case 3: menu_user();
                     break;
+            case 4: cout<<"Saliendo del programa\n";
+                guardarUsuariosEnArchivo(User, nombreArchivo2);
+                guardarPeliculasEnArchivo(Movie, nombreArchivo);
+                    break;
         }
     }while(option!=4);
 }
@@ -69,13 +122,23 @@ void menu_movie(){
     switch(option){
         case 1: cout<<"Escriba la pelicula que desee agregar\n";
                 getline(cin,name);
-                cout<<"Año de lanzamiento\n";
+                cout<<"escriba su año de lanzamiento\n";
                 cin>>year;
+            //manejo de errores y verificacion d datos.
+                if (year < 1888 || year > 2024) {
+                    cout << "Año invalido. Introduzca un año entre 1888 y 2024.\n";
+                    return;
+                }
                 cin.ignore(1000,'\n');
-                cout<<"Genero de la pelicula\n";
+                cout<<"escriba el genero de la pelicula\n";
                 getline(cin,genre);
                 cout<<"Duracion de la pelicula (minutos)\n";
                 cin>>length;
+                    //manejo de errores y verificacion d datos. mael
+                    if (length <= 0) {
+                        cout << "Longitud no válida. Por favor ingrese una longitud positiva.\n";
+                        return;
+                    }
                 insert_movie(Movie, name, year, genre, length);
                 break;
 
@@ -134,7 +197,7 @@ void delete_a_movie(Movies *&Movie, string n){
             aux2=aux1;
             aux1=aux1->next;
         }
-        
+
         if(aux1==NULL){
             cout<<"El elemento no se ha encontrado\n";
             cout<<"\n";
@@ -151,7 +214,48 @@ void delete_a_movie(Movies *&Movie, string n){
         }
     }
 }
+//lectura de archivos
+void leerPeliculas(const std::string& nombreArchivo, Movies& lista) {
+    std::ifstream archivo(nombreArchivo);
+    std::string linea;
+    int yr; int duracion; string nombre; string genero; 
+    if (!archivo.is_open()) {
+        std::cerr << "No se pudo abrir el archivo." << std::endl;
+        return;
+    }
 
+    while (std::getline(archivo, linea)) {
+        std::istringstream iss(linea);
+        Movies pelicula;
+        std::getline(iss, nombre, ',');
+        iss >> yr;
+        iss.ignore(); 
+        std::getline(iss, genero, ',');
+        iss >> duracion;
+        iss.ignore();
+        insert_movie(Movie, nombre, yr, genero, duracion);
+    }
+    archivo.close();
+}
+void leerUsuarios(const std::string& nombreArchivo, Users& lista){
+    std::ifstream archivo(nombreArchivo);    
+    std::string linea;
+    int edad; string mail; string pais;
+    if (!archivo.is_open()) {
+        std::cerr << "No se pudo abrir el archivo." << std::endl;
+        return;
+    }
+    while (std::getline(archivo, linea)){
+        std::istringstream iss(linea);
+        Users usuario;
+        std::getline(iss, mail, ',');
+        iss >> edad;
+        iss.ignore();
+        std::getline(iss, pais, ',');
+        insert_user(User, mail, edad, pais);
+    }
+    archivo.close();
+}
 //Parte Usuarios
 
 void menu_user(){
@@ -168,7 +272,7 @@ void menu_user(){
                 cout<<"Escriba su edad\n";
                 cin>>age;
                 cin.ignore(1000,'\n');
-                cout<<"Genero de la pelicula\n";
+                cout<<"Escriba su pais de origen\n";
                 getline(cin,country);
                 insert_user(User, mail, age, country);
                 break;
@@ -176,7 +280,7 @@ void menu_user(){
         case 2: show_users(User);
                 break;
 
-        case 3: cout<<"Escriba la pelicula que desee eliminar\n";
+        case 3: cout<<"Escriba el correo del usuario que desee eliminar\n";
                 getline(cin,mail);
                 delete_a_user(User,mail);
                 break;
@@ -226,7 +330,7 @@ void delete_a_user(Users *&User, string m){
             aux2=aux1;
             aux1=aux1->next;
         }
-        
+
         if(aux1==NULL){
             cout<<"El elemento no se ha encontrado\n";
             cout<<"\n";
@@ -242,5 +346,5 @@ void delete_a_user(Users *&User, string m){
             cout<<"\n";
         }
     }
+    // En el nombre de Dios este codigo funciona fino y corre en todos lados, Amen.
 }
-//Hola
