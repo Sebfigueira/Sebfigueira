@@ -346,5 +346,6 @@ void delete_a_user(Users *&User, string m){
             cout<<"\n";
         }
     }
-    // En el nombre de Dios este codigo funciona fino y corre en todos lados, Amen.
+    // Bien
+
 }
