@@ -32,7 +32,7 @@ struct Series{
     Series *seasons;
     string name_season;
     Series *chapters;
-
+    string name_chapter;
     int lenght;
     int chapter_number;
 };
@@ -54,8 +54,10 @@ void menu_seasons();
 void insert_seasons(Series *&, string, int, string);
 void show_seasons(Series *, string);
 void menu_chapters();
-void insert_chapters(Series *&, string, int, int, int);
-bool buscar_lista(Series *, string);
+void insert_chapters(Series *&, string, int, int, int, string, string);
+void show_chapters(Series *, string, string);
+bool buscar_serie(Series *, string);
+bool buscar_season(Series *, string, string);
 void leerPeliculas(const std::string& nombreArchivo, Movies&);
 void leerUsuarios(const std::string& nombreArchivo, Users& );
 void guardarPeliculasEnArchivo(Movies* Movie, const std::string& nombreArchivo);
@@ -499,7 +501,7 @@ void menu_seasons(){
     switch(option){
         case 1: cout<<"Escriba la serie a la que pertenece la temporada\n";
                 getline(cin,name_serie);
-                if((buscar_lista(Serie,name_serie)) == true){
+                if((buscar_serie(Serie,name_serie)) == true){
                     cout<<"Escriba el nombre de la temporada\n";
                     getline(cin,name);
                     cout<<"Escriba su año de lanzamiento\n";
@@ -515,8 +517,11 @@ void menu_seasons(){
 
         case 2: cout<<"Escriba la serie de la cual quiere ver sus temporadas\n";
                 getline(cin,name_serie);
-                if((buscar_lista(Serie,name_serie)) == true){
+                if((buscar_serie(Serie,name_serie)) == true){
                     show_seasons(Serie,name_serie);
+                }
+                else{
+                    cout<<"No hay ninguna serie con ese nombre\n";
                 }
                 break;
 
@@ -566,8 +571,7 @@ void show_seasons(Series *Serie, string n){
         cout<<"\n";
         cout<<aux1 -> name_season<<"\n";
         cout<<aux1 -> year_released<<"\n";
-        cout<<"\n";
-        aux1 = aux1 -> next;
+        aux1 = aux1 -> seasons;
     }
 }
 
@@ -582,10 +586,10 @@ void menu_chapters(){
     switch(option){
         case 1: cout<<"Escriba la serie a la que pertenece el capitulo\n";
                 getline(cin,name_serie);
-                if((buscar_lista(Serie,name_serie)) == true){
+                if((buscar_serie(Serie,name_serie)) == true){
                     cout<<"Escriba la temporada a la que pertenece el capitulo\n";
                     getline(cin,name_season);
-                    if((buscar_lista(Serie,name_serie)) == true){
+                    if((buscar_season(Serie,name_serie,name_season)) == true){
                         cout<<"Escriba el nombre de la serie\n";
                         getline(cin,name);
                         cout<<"Escriba su año de lanzamiento\n";
@@ -595,7 +599,7 @@ void menu_chapters(){
                         cin>>lenght;
                         cout<<"Numero de capitulo\n";
                         cin>>chapter_number;
-                        insert_chapters(Serie, name, year, lenght, chapter_number);
+                        insert_chapters(Serie, name, year, lenght, chapter_number,name_serie, name_season);
                     }
                     else{
                         cout<<"No hay ninguna temporada con ese nombre\n";
@@ -606,7 +610,21 @@ void menu_chapters(){
                 }
                 break;
 
-        case 2: show_series(Serie);
+        case 2: cout<<"Escriba la serie de la cual quiere ver sus capitulos\n";
+                getline(cin,name_serie);
+                if((buscar_serie(Serie,name_serie)) == true){
+                    cout<<"Escriba la temporada de la cual quiere ver sus capitulos\n";
+                    getline(cin,name_season);
+                    if((buscar_season(Serie,name_serie,name_season)) == true){
+                        show_chapters(Serie,name_serie, name_season);
+                    }
+                    else{
+                        cout<<"No hay ninguna temporada con ese nombre\n";
+                    }
+                }
+                else{
+                    cout<<"No hay ninguna serie con ese nombre\n";
+                }
                 break;
 
         case 3: cout<<"Escriba la serie que quiera eliminar\n";
@@ -619,29 +637,61 @@ void menu_chapters(){
     }
 }
 
-void insert_chapters(Series *&Serie, string n, int yr, int l, int cn){
-    Series *new_serie = new Series;
-    new_serie -> name_serie = n;
-    new_serie -> year_released = yr;
+void insert_chapters(Series *&Serie, string n, int yr, int l, int cn, string ns, string nse){
+    Series *new_chapter = new Series;
+    new_chapter -> name_chapter = n;
+    new_chapter -> year_released = yr;
+    new_chapter -> lenght = l;
+    new_chapter -> chapter_number = cn;
     Series *aux1 = Serie;
     Series *aux2;
-
-    while((aux1 != NULL)&&((aux1 -> name_serie)== n )){
+    while(((aux1 -> name_serie)!= ns )&&((aux1 != NULL))){
         aux2 = aux1;
         aux1 = aux1 -> next;
     }
-
-    if(Serie == aux1){
-        Serie = new_serie;
+    aux2 = aux1 -> seasons;
+    aux1=aux2;
+    while(((aux1 -> name_season)!= nse )&&((aux1 != NULL))){
+        aux2 = aux1;
+        aux1 = aux1 -> seasons;
+    }
+    aux2 = aux1 -> chapters;
+    if(aux2==NULL){
+        aux1 -> chapters = new_chapter;
+        new_chapter -> chapters = aux2;
     }
     else{
-        aux2 -> next = new_serie;
+        while(aux2 != NULL){
+            aux1 = aux2;
+            aux2 = aux2 -> chapters;
+        }
+        aux1 -> chapters = new_chapter;
+        new_chapter -> chapters = aux2;
     }
-    new_serie -> next = aux1;
-    new_serie -> seasons = aux1;
 }
 
-bool buscar_lista(Series *Serie,string n){
+void show_chapters(Series *Serie, string n, string ns){
+    Series *aux1 = Serie;
+    while(((aux1 -> name_serie)!= n )&&((aux1 != NULL))){
+        aux1 = aux1 -> next;
+    } 
+    aux1 = aux1 -> seasons;
+    while(((aux1 -> name_season)!= ns )&&((aux1 != NULL))){
+        aux1 = aux1 -> seasons;
+    } 
+    aux1 = aux1 -> chapters;
+    cout<<"hola\n";
+    while(aux1 != NULL){
+        cout<<"\n";
+        cout<<aux1 -> name_chapter<<"\n";
+        cout<<aux1 -> year_released<<"\n";
+        cout<<aux1 -> lenght<<"\n";
+        cout<<aux1 -> chapter_number<<"\n";
+        aux1 = aux1 -> chapters;
+    }
+}
+
+bool buscar_serie(Series *Serie,string n){
     bool bandera = false;
     Series *p = Serie;
 
@@ -652,6 +702,29 @@ bool buscar_lista(Series *Serie,string n){
         p=p->next;
     }
 
+    if(bandera){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool buscar_season(Series *Serie,string n, string ns){
+    bool bandera = false;
+    Series *p = Serie;
+    
+    while(((p -> name_serie)!= n )&&((p != NULL))){
+        p = p -> next;
+    } 
+    p = p -> seasons;
+    while(p!=NULL){
+        if(p->name_season==ns){
+            bandera = true;
+        }
+        p = p -> seasons;
+    }
+    
     if(bandera){
         return true;
     }
