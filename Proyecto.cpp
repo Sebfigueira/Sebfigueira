@@ -22,6 +22,11 @@ struct Users{
     int age;
     string country;
     Users *next;
+    Users *qualifications;
+    string name;
+    float score;
+    Users *reviews;
+    string review;
 };
 
 struct Series{
@@ -45,6 +50,11 @@ void menu_user();
 void insert_user(Users *&, string, int, string);
 void show_users(Users *);
 void delete_a_user(Users *&, string);
+void menu_qualification_movie();
+void add_qualification_movie(Users *&, string, string, float);
+void show_qualification_movie(Users *, string);
+void delete_a_qualification_movie(Users *&, string, string);
+bool buscar_user(Users *,string);
 void menu_series_general();
 void menu_series();
 void insert_series(Series *&, string, int, string);
@@ -292,6 +302,8 @@ void menu_user(){
     cout<<"1. Agregar usuario\n";
     cout<<"2. Mostrar usuario\n";
     cout<<"3. Eliminar un usuario\n";
+    cout<<"4. Calificacion\n";
+    cout<<"5. Reseña\n";
     cin>>option;
     cin.ignore(1000,'\n');
     switch(option){
@@ -312,15 +324,27 @@ void menu_user(){
                 getline(cin,mail);
                 delete_a_user(User,mail);
                 break;
-
+            
+        case 4: cout<<"----CALIFICACIONES----\n";
+                cout<<"1. Peliculas\n";
+                cout<<"2. Series\n";
+                cin>>option;
+                if(option==1){
+                    menu_qualification_movie();
+                }
+                else if (option==2){
+                    
+                }
+                
+                break;
     }
 }
 
 void insert_user(Users *&Movie, string m, int a, string c){
-    Users *new_movie = new Users;
-    new_movie -> mail = m;
-    new_movie -> age = a;
-    new_movie -> country = c;
+    Users *new_user = new Users;
+    new_user -> mail = m;
+    new_user -> age = a;
+    new_user -> country = c;
     Users *aux1 = User;
     Users *aux2;
 
@@ -330,12 +354,12 @@ void insert_user(Users *&Movie, string m, int a, string c){
     }
 
     if(Movie == aux1){
-        Movie = new_movie;
+        Movie = new_user;
     }
     else{
-        aux2 -> next = new_movie;
+        aux2 -> next = new_user;
     }
-    new_movie -> next = aux1;
+    new_user -> next = aux1;
 }
 
 void show_users(Users *User){
@@ -374,8 +398,131 @@ void delete_a_user(Users *&User, string m){
             cout<<"\n";
         }
     }
-    // Bien
+}
 
+void menu_qualification_movie(){
+    int option;
+    float score;
+    string mail_user, name_movie;
+    cout<<"----------Peliculas------------\n";
+    cout<<"1.Agregar una calificacion\n";
+    cout<<"2.Top 5 mejores calificadas\n";
+    cout<<"3. Mostrar calificaciones\n";
+    cout<<"4. Eliminar una calificacion\n";
+    cin>>option;
+    cin.ignore(1000,'\n');
+    switch(option){
+        case 1: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba la pelicula a la que le quiera hacer la calificacion\n";
+                    getline(cin,name_movie);
+                    cout<<"Calificacion (0.0 al 5.0)\n";
+                    cin>>score;
+                    if((score>(0))and(score<(5))){
+                        add_qualification_movie(User,mail_user,name_movie,score);
+                    }
+                    else{
+                        cout<<"Calificacion fuera de rango";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+
+        case 3: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    show_qualification_movie(User,mail_user);
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+
+        case 4: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba la pelicula a la cual quiere eliminar su califiacion\n";
+                    getline(cin,name_movie);
+                    delete_a_qualification_movie(User, mail_user,name_movie);
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+    }
+}
+
+void add_qualification_movie(Users *&User, string m, string n, float s){
+    Users *new_qualification = new Users;
+    new_qualification -> name = n;
+    new_qualification -> score = s;
+    Users *aux1 = User;
+    Users *aux2;
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux2 = aux1;
+        aux1 = aux1 -> next;
+    }
+    aux2 = aux1 -> qualifications;
+    if(aux2==NULL){
+        aux1 -> qualifications = new_qualification;
+        new_qualification -> qualifications = aux2;
+    }
+    else{
+        while(aux2 != NULL){
+            aux1 = aux2;
+            aux2 = aux2 -> qualifications;
+        }
+        aux1 -> qualifications = new_qualification;
+        new_qualification -> qualifications = aux2;
+    }
+    cout<<"Agregado exitosamente\n";
+    cout<<"\n";
+}
+
+void show_qualification_movie(Users *User, string m){
+    Users *aux1 = User;
+    
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux1 = aux1 -> next;
+    }
+    aux1 = aux1 -> qualifications;
+    while(aux1 != NULL){
+        cout<<"\n";
+        cout<<"Pelicula: "<<aux1 -> name<<"\n";
+        cout<<"Calificacion: "<<aux1 -> score<<"\n";
+        aux1 = aux1 -> qualifications;
+    }
+}
+
+void delete_a_qualification_movie(Users *&User, string m, string n){
+    if (User!=NULL){
+        Users *aux1 = User;
+        Users *aux2,*aux3;
+
+        while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+            aux2 = aux1;
+            aux1 = aux1 -> next;
+        }
+        aux3 = aux2;
+        while(((aux2 -> name)!= n )&&((aux1 != NULL))){
+            aux3 = aux2;
+            aux2 = aux2 -> qualifications;
+        }
+        if(aux2==aux3){
+            aux2 = aux2 -> qualifications;
+            aux1 -> qualifications = aux2;
+            delete aux3;
+        }
+        else{
+            aux3 -> qualifications = aux2 -> qualifications;
+            delete aux2;
+        }
+        cout<<"Eliminado exitosamente\n";
+        cout<<"\n";
+    }
 }
 
 //Parte series
@@ -835,6 +982,25 @@ bool buscar_season(Series *Serie,string n, string ns){
         p = p -> seasons;
     }
     
+    if(bandera){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool buscar_user(Users *User,string n){
+    bool bandera = false;
+    Users *p = User;
+    
+    while(p!=NULL){
+        if(p->mail==n){
+            bandera = true;
+        }
+        p=p->next;
+    }
+
     if(bandera){
         return true;
     }
