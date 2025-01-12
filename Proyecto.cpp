@@ -21,10 +21,17 @@ struct Users{
     int age;
     string country;
     string name;
+    string name_season;
+    string name_chapter;
     float score;
     Users *next;
     Users *qualifications_movies;
     Users *qualifications_series;
+    Users *review_movie;
+    Users *review_serie;
+    Users *review_season;
+    Users *review_chapter;
+    string reviews;
 };
 
 struct Series{
@@ -59,6 +66,24 @@ void add_qualification_serie(Users *&, string, string, float);
 void show_qualification_serie(Users *, string);
 void delete_a_qualification_serie(Users *&, string , string);
 void top_5_qualifications_series(Users *User);
+void menu_reviews();
+void menu_reviews_movies();
+void add_review_movie(Users *&, string, string, string);
+void show_review_movie(Users *, string);
+void delete_a_review_movie(Users *&, string , string);
+void menu_reviews_series_general();
+void menu_reviews_series();
+void add_review_serie(Users *&, string, string, string);
+void show_review_serie(Users *, string);
+void delete_a_review_serie(Users *&, string , string);
+void menu_review_seasons();
+void add_review_season(Users *&, string, string, string, string);
+void show_review_season(Users *, string);
+void delete_a_review_season(Users *&, string , string);
+void menu_review_chapter();
+void add_review_chapter(Users *&, string, string, string, string, string);
+void show_review_chapter(Users *, string);
+void delete_a_review_chapter(Users *&, string, string);
 bool buscar_user(Users *,string);
 void menu_series_general();
 void menu_series();
@@ -75,6 +100,7 @@ void show_chapters(Series *, string, string);
 void delete_a_chapter(Series *&, string , string, string);
 bool buscar_serie(Series *, string);
 bool buscar_season(Series *, string, string);
+bool buscar_chapter(Series *,string, string, string);
 void leerPeliculas(const std::string& nombreArchivo, Movies*&);
 void leerUsuarios(const std::string& nombreArchivo, Users *&);
 void guardarPeliculasEnArchivo(Movies* Movie, const std::string& nombreArchivo);
@@ -341,6 +367,9 @@ void menu_user(){
                     menu_qualification_serie();
                 }
                 break;
+
+        case 5: menu_reviews();
+                break;
     }
 }
 
@@ -366,6 +395,10 @@ void insert_user(Users *&User, string m, int a, string c){
     new_user -> next = aux1;
     new_user -> qualifications_movies = aux1;
     new_user -> qualifications_series = aux1;
+    new_user -> review_movie = aux1;
+    new_user -> review_serie = aux1;
+    new_user -> review_season = aux1;
+    new_user -> review_chapter = aux1;
 }
 
 void show_users(Users *User){
@@ -704,6 +737,642 @@ void delete_a_qualification_serie(Users *&User, string m, string n){
     }
 }
 
+void menu_reviews(){
+    int option;
+    cout<<"----------Reseñas------------\n";
+    cout<<"1.Peliculas\n";
+    cout<<"2.Series\n";
+    cin>>option;
+    cin.ignore(1000,'\n');
+    switch(option){
+        case 1: menu_reviews_movies();
+                break;
+        
+        case 2: menu_reviews_series_general();
+                break;
+    }
+}
+
+void menu_reviews_movies(){
+    int option;
+    string mail_user,name_movie,review;
+    cout<<"-----------Peliculas------------\n";
+    cout<<"1.Agregar reseña\n";
+    cout<<"2.Mostrar reseñas\n";
+    cout<<"3.Eliminar reseña\n";
+    cin>>option;
+    cin.ignore(1000000,'\n');
+    switch(option){   
+        case 1: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba la pelicula a la que le quiera hacer la reseña\n";
+                    getline(cin,name_movie);
+                    if((buscar_movie(Movie,name_movie)) == true){
+                        cout<<"Reseña:\n";
+                        getline(cin,review);
+                        add_review_movie(User,mail_user,name_movie,review);
+                    }
+                    else{
+                    cout<<"No hay ninguna pelicula con ese nombre\n";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+        
+        case 2: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                show_review_movie(User,mail_user);
+                break;
+
+        case 3: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba el nombre de la pelicula a la cual quiere eliminar su reseña\n";
+                    getline(cin,name_movie);
+                    if((buscar_movie(Movie,name_movie)) == true){
+                        delete_a_review_movie(User, mail_user, name_movie);
+                    }
+                    else{
+                        cout<<"No hay ninguna pelicula con ese nombre";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+    }
+
+}
+
+void add_review_movie(Users *&User, string m, string n, string r){
+    Users *new_review = new Users;
+    new_review -> name = n;
+    new_review -> reviews = r;
+    Users *aux1 = User;
+    Users *aux2;
+    bool bandera=false;
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux2 = aux1;
+        aux1 = aux1 -> next;
+    }
+    aux2 = aux1 -> review_movie;
+    while(aux2 != NULL){
+        if((aux2 -> name)==n){
+            bandera = true;
+        }
+        aux2 = aux2 -> review_movie;
+    }
+    aux2 = aux1 -> review_movie;
+    if(bandera == false){
+        if(aux2==NULL){
+        aux1 -> review_movie = new_review;
+        new_review -> review_movie = aux2;
+        }
+        else{
+            while(aux2 != NULL){
+                aux1 = aux2;
+                aux2 = aux2 -> review_movie;
+            }
+            aux1 -> review_movie = new_review;
+            new_review -> review_movie = aux2;
+        }
+        cout<<"Agregado exitosamente\n";
+        cout<<"\n";
+    }
+    else{
+        cout<<"Ya realizaste una reseña sobre esta pelicula\n";
+        cout<<"\n";
+    }
+
+}
+
+void show_review_movie(Users *User, string m){
+    Users *aux1 = User;
+    
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux1 = aux1 -> next;
+    }
+    aux1 = aux1 -> review_movie;
+    while(aux1 != NULL){
+        cout<<"\n";
+        cout<<"Pelicula: "<<aux1 -> name<<"\n";
+        cout<<"Review: "<<aux1 -> reviews<<"\n";
+        aux1 = aux1 -> review_movie;
+    }
+}
+
+void delete_a_review_movie(Users *&User, string m, string n){
+    if (User!=NULL){
+        Users *aux1 = User;
+        Users *aux2,*aux3;
+
+        while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+            aux2 = aux1;
+            aux1 = aux1 -> next;
+        }
+        aux2 = aux1 -> review_movie;
+        aux3 = aux2;
+        while(((aux2 -> name)!= n )&&((aux1 != NULL))){
+            aux3 = aux2;
+            aux2 = aux2 -> review_movie;
+        }
+        if(aux2==aux3){
+            aux2 = aux2 -> review_movie;
+            aux1 -> review_movie = aux2;
+            delete aux3;
+        }
+        else{
+            aux3 -> review_movie = aux2 -> review_movie;
+            delete aux2;
+        }
+        cout<<"Eliminado exitosamente\n";
+        cout<<"\n";
+    }
+}
+
+void menu_reviews_series_general(){
+    int option;
+    cout<<"-----------Series------------\n";
+    cout<<"1.Series\n";
+    cout<<"2.Temporadas\n";
+    cout<<"3.Capitulos\n";
+    cin>>option;
+    cin.ignore(1000,'\n');
+    switch(option){
+        case 1: menu_reviews_series();
+                break;
+        
+        case 2: menu_review_seasons();
+                break;
+            
+        case 3: menu_review_chapter();
+                break;
+    }
+}
+
+
+void menu_reviews_series(){
+    int option;
+    string mail_user,name_serie,review;
+    cout<<"-----------Series------------\n";
+    cout<<"1.Agregar reseña\n";
+    cout<<"2.Mostrar reseñas\n";
+    cout<<"3.Eliminar reseña\n";
+    cin>>option;
+    cin.ignore(1000000,'\n');
+    switch(option){   
+        case 1: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba la serie a la que le quiera hacer la reseña\n";
+                    getline(cin,name_serie);
+                    if((buscar_serie(Serie,name_serie)) == true){
+                        cout<<"Reseña:\n";
+                        getline(cin,review);
+                        add_review_serie(User,mail_user,name_serie,review);
+                    }
+                    else{
+                    cout<<"No hay ninguna serie con ese nombre\n";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+        
+        case 2: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                show_review_serie(User,mail_user);
+                break;
+
+        case 3: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba el nombre de la serie a la cual quiere eliminar su reseña\n";
+                    getline(cin,name_serie);
+                    if((buscar_serie(Serie,name_serie)) == true){
+                        delete_a_review_serie(User, mail_user, name_serie);
+                    }
+                    else{
+                        cout<<"No hay ninguna serie con ese nombre";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+    }
+
+}
+
+void add_review_serie(Users *&User, string m, string n, string r){
+    Users *new_review = new Users;
+    new_review -> name = n;
+    new_review -> reviews = r;
+    Users *aux1 = User;
+    Users *aux2;
+    bool bandera=false;
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux2 = aux1;
+        aux1 = aux1 -> next;
+    }
+    aux2 = aux1 -> review_serie;
+    while(aux2 != NULL){
+        if((aux2 -> name)==n){
+            bandera = true;
+        }
+        aux2 = aux2 -> review_serie;
+    }
+    aux2 = aux1 -> review_serie;
+    if(bandera == false){
+        if(aux2==NULL){
+        aux1 -> review_serie = new_review;
+        new_review -> review_serie = aux2;
+        }
+        else{
+            while(aux2 != NULL){
+                aux1 = aux2;
+                aux2 = aux2 -> review_serie;
+            }
+            aux1 -> review_serie = new_review;
+            new_review -> review_serie = aux2;
+        }
+        cout<<"Agregado exitosamente\n";
+        cout<<"\n";
+    }
+    else{
+        cout<<"Ya realizaste una reseña sobre esta serie\n";
+        cout<<"\n";
+    }
+
+}
+
+void show_review_serie(Users *User, string m){
+    Users *aux1 = User;
+    
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux1 = aux1 -> next;
+    }
+    aux1 = aux1 -> review_serie;
+    while(aux1 != NULL){
+        cout<<"\n";
+        cout<<"Serie: "<<aux1 -> name<<"\n";
+        cout<<"Review: "<<aux1 -> reviews<<"\n";
+        aux1 = aux1 -> review_serie;
+    }
+}
+
+void delete_a_review_serie(Users *&User, string m, string n){
+    if (User!=NULL){
+        Users *aux1 = User;
+        Users *aux2,*aux3;
+
+        while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+            aux2 = aux1;
+            aux1 = aux1 -> next;
+        }
+        aux2 = aux1 -> review_serie;
+        aux3 = aux2;
+        while(((aux2 -> name)!= n )&&((aux1 != NULL))){
+            aux3 = aux2;
+            aux2 = aux2 -> review_serie;
+        }
+        if(aux2==aux3){
+            aux2 = aux2 -> review_serie;
+            aux1 -> review_serie = aux2;
+            delete aux3;
+        }
+        else{
+            aux3 -> review_serie = aux2 -> review_serie;
+            delete aux2;
+        }
+        cout<<"Eliminado exitosamente\n";
+        cout<<"\n";
+    }
+}
+
+void menu_review_seasons(){
+    int option;
+    string name, name_serie, mail_user, review;
+    cout<<"1. Agregar reseña\n";
+    cout<<"2. Mostrar reseñas\n";
+    cout<<"3. Eliminar reseñas\n";
+    cin>>option;
+    cin.ignore(1000,'\n');
+    switch(option){
+        case 1: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba la serie a la que pertenece la temporada\n";
+                    getline(cin,name_serie);
+                    if((buscar_serie(Serie,name_serie)) == true){
+                        cout<<"Escriba el nombre de la temporada\n";
+                        getline(cin,name);
+                        if((buscar_season(Serie,name_serie,name)) == true){
+                            cout<<"Reseña:\n";
+                            getline(cin,review);
+                            add_review_season(User, mail_user, name_serie, name, review);
+                        }
+                        else{
+                            cout<<"No hay ninguna temporada con ese nombre\n";
+                        }
+                    }
+                    else{
+                        cout<<"No hay ninguna serie con ese nombre\n";
+                    }
+                } 
+                else{
+                    cout<<"No hay ningun usuario con ese nombre\n";
+                }
+                break;
+
+        case 2: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                show_review_season(User,mail_user);
+                break;
+
+        case 3: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba el nombre de la serie a la que pertenece la temporada\n";
+                    getline(cin,name_serie);
+                    if((buscar_serie(Serie,name_serie)) == true){
+                        cout<<"Escriba el nombre de la temporada a la cual quiere eliminar su reseña\n";
+                        getline(cin,name);
+                        if((buscar_season(Serie,name_serie,name)) == true){
+                            delete_a_review_season(User, mail_user, name);
+                        }
+                        else{
+                            cout<<"No hay ninguna temporada con ese nombre";
+                        }
+                    }
+                    else{
+                        cout<<"No hay ninguna serie con ese nombre";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+    }
+}
+
+void add_review_season(Users *&User, string m, string n, string ns, string r){
+    Users *new_review = new Users;
+    new_review -> name = n;
+    new_review -> name_season = ns;
+    new_review -> reviews = r;
+    Users *aux1 = User;
+    Users *aux2;
+    bool bandera=false;
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux2 = aux1;
+        aux1 = aux1 -> next;
+    }
+    aux2 = aux1 -> review_season;
+    while(aux2 != NULL){
+        if((aux2 -> name_season)==ns){
+            bandera = true;
+        }
+        aux2 = aux2 -> review_season;
+    }
+    aux2 = aux1 -> review_season;
+    if(bandera == false){
+        if(aux2==NULL){
+        aux1 -> review_season = new_review;
+        new_review -> review_season = aux2;
+        }
+        else{
+            while(aux2 != NULL){
+                aux1 = aux2;
+                aux2 = aux2 -> review_season;
+            }
+            aux1 -> review_season = new_review;
+            new_review -> review_season = aux2;
+        }
+        cout<<"Agregado exitosamente\n";
+        cout<<"\n";
+    }
+    else{
+        cout<<"Ya realizaste una reseña sobre esta temporada\n";
+        cout<<"\n";
+    }
+}
+
+void show_review_season(Users *User, string m){
+    Users *aux1 = User;
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux1 = aux1 -> next;
+    }
+    aux1 = aux1 -> review_season;
+    while(aux1 != NULL){
+        cout<<"\n";
+        cout<<"Serie: "<<aux1 -> name<<"\n";
+        cout<<"Temporada: "<<aux1 -> name_season<<"\n";
+        cout<<"Review: "<<aux1 -> reviews<<"\n";
+        aux1 = aux1 -> review_season;
+    }
+}
+
+void delete_a_review_season(Users *&User, string m, string n){
+    if (User!=NULL){
+        Users *aux1 = User;
+        Users *aux2,*aux3;
+
+        while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+            aux2 = aux1;
+            aux1 = aux1 -> next;
+        }
+        aux2 = aux1 -> review_season;
+        aux3 = aux2;
+        while(((aux2 -> name_season)!= n )&&((aux1 != NULL))){
+            aux3 = aux2;
+            aux2 = aux2 -> review_season;
+        }
+        if(aux2==aux3){
+            aux2 = aux2 -> review_season;
+            aux1 -> review_season = aux2;
+            delete aux3;
+        }
+        else{
+            aux3 -> review_season = aux2 -> review_season;
+            delete aux2;
+        }
+        cout<<"Eliminado exitosamente\n";
+        cout<<"\n";
+    }
+}
+
+void menu_review_chapter(){
+    int option;
+    string name, name_season, name_serie, mail_user, review;
+    cout<<"1. Agregar reseña\n";
+    cout<<"2. Mostrar reseñas\n";
+    cout<<"3. Eliminar reseñas\n";
+    cin>>option;
+    cin.ignore(1000,'\n');
+    switch(option){
+        case 1: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba la serie a la que pertenece la temporada\n";
+                    getline(cin,name_serie);
+                    if((buscar_serie(Serie,name_serie)) == true){
+                        cout<<"Escriba el nombre de la temporada\n";
+                        getline(cin,name_season);
+                        if((buscar_season(Serie,name_serie,name_season)) == true){
+                            cout<<"Escriba el nombre del capitulo\n";
+                            getline(cin,name);
+                            if((buscar_chapter(Serie,name_serie,name_season,name)) == true){
+                                cout<<"Reseña:\n";
+                                getline(cin,review);
+                                add_review_chapter(User, mail_user, name_serie, name_season, name, review);
+                            }
+                            else{
+                                cout<<"No hay ningun capitulo con ese nombre\n";
+                            }
+                        }
+                        else{
+                            cout<<"No hay ninguna temporada con ese nombre\n";
+                        }
+                    }
+                    else{
+                        cout<<"No hay ninguna serie con ese nombre\n";
+                    }
+                } 
+                else{
+                    cout<<"No hay ningun usuario con ese nombre\n";
+                }
+                break;
+
+        case 2: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                show_review_chapter(User,mail_user);
+                break;
+
+        case 3: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba el nombre de la serie a la que pertenece la temporada\n";
+                    getline(cin,name_serie);
+                    if((buscar_serie(Serie,name_serie)) == true){
+                        cout<<"Escriba el nombre de la temporada a la cual quiere eliminar su reseña\n";
+                        getline(cin,name_season);
+                        if((buscar_season(Serie,name_serie,name)) == true){
+                            cout<<"Escriba el nombre de la temporada a la cual quiere eliminar su reseña\n";
+                            getline(cin,name_season);
+                            if((buscar_season(Serie,name_serie,name)) == true){
+                                delete_a_review_chapter(User, mail_user, name);
+                            }
+                            else{
+                                cout<<"No hay ningun capitulo con ese nombre";
+                            }
+                        }
+                        else{
+                            cout<<"No hay ninguna temporada con ese nombre";
+                        }
+                    }
+                    else{
+                        cout<<"No hay ninguna serie con ese nombre";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+    }
+}
+
+void add_review_chapter(Users *&User, string m, string n, string ns, string c, string r){
+    Users *new_review = new Users;
+    new_review -> name = n;
+    new_review -> name_season = ns;
+    new_review -> name_chapter = c;
+    new_review -> reviews = r;
+    Users *aux1 = User;
+    Users *aux2;
+    bool bandera=false;
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux2 = aux1;
+        aux1 = aux1 -> next;
+    }
+    aux2 = aux1 -> review_chapter;
+    while(aux2 != NULL){
+        if((aux2 -> name_chapter)==c){
+            bandera = true;
+        }
+        aux2 = aux2 -> review_chapter;
+    }
+    aux2 = aux1 -> review_chapter;
+    if(bandera == false){
+        if(aux2==NULL){
+        aux1 -> review_chapter = new_review;
+        new_review -> review_chapter = aux2;
+        }
+        else{
+            while(aux2 != NULL){
+                aux1 = aux2;
+                aux2 = aux2 -> review_chapter;
+            }
+            aux1 -> review_chapter = new_review;
+            new_review -> review_chapter = aux2;
+        }
+        cout<<"Agregado exitosamente\n";
+        cout<<"\n";
+    }
+    else{
+        cout<<"Ya realizaste una reseña sobre esta temporada\n";
+        cout<<"\n";
+    }
+}
+
+void show_review_chapter(Users *User, string m){
+    Users *aux1 = User;
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux1 = aux1 -> next;
+    }
+    aux1 = aux1 -> review_chapter;
+    while(aux1 != NULL){
+        cout<<"\n";
+        cout<<"Serie: "<<aux1 -> name<<"\n";
+        cout<<"Temporada: "<<aux1 -> name_season<<"\n";
+        cout<<"Capitulo: "<<aux1 -> name_chapter<<"\n";
+        cout<<"Review: "<<aux1 -> reviews<<"\n";
+        aux1 = aux1 -> review_chapter;
+    }
+}
+
+void delete_a_review_chapter(Users *&User, string m, string n){
+    if (User!=NULL){
+        Users *aux1 = User;
+        Users *aux2,*aux3;
+
+        while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+            aux2 = aux1;
+            aux1 = aux1 -> next;
+        }
+        aux2 = aux1 -> review_chapter;
+        aux3 = aux2;
+        while(((aux2 -> name_chapter)!= n )&&((aux1 != NULL))){
+            aux3 = aux2;
+            aux2 = aux2 -> review_chapter;
+        }
+        if(aux2==aux3){
+            aux2 = aux2 -> review_chapter;
+            aux1 -> review_chapter = aux2;
+            delete aux3;
+        }
+        else{
+            aux3 -> review_chapter = aux2 -> review_chapter;
+            delete aux2;
+        }
+        cout<<"Eliminado exitosamente\n";
+        cout<<"\n";
+    }
+}
 
 //Parte series
 void menu_series_general(){
@@ -1160,6 +1829,33 @@ bool buscar_season(Series *Serie,string n, string ns){
             bandera = true;
         }
         p = p -> seasons;
+    }
+    
+    if(bandera){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool buscar_chapter(Series *Serie,string n, string ns, string c){
+    bool bandera = false;
+    Series *p = Serie;
+    
+    while(((p -> name_serie)!= n )&&((p != NULL))){
+        p = p -> next;
+    } 
+    p = p -> seasons;
+    while(((p -> name_season)!= ns )&&((p != NULL))){
+        p = p -> seasons;
+    } 
+    p = p -> chapters;
+    while(p!=NULL){
+        if(p->name_chapter==c){
+            bandera = true;
+        }
+        p = p -> chapters;
     }
     
     if(bandera){
