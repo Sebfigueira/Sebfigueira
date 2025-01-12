@@ -13,7 +13,6 @@ struct Movies{
     int year_released;
     string genre;
     int length;
-    struct Users;
     Movies *next;
 };
 
@@ -21,12 +20,11 @@ struct Users{
     string mail;
     int age;
     string country;
-    Users *next;
-    Users *qualifications;
     string name;
     float score;
-    Users *reviews;
-    string review;
+    Users *next;
+    Users *qualifications_movies;
+    Users *qualifications_series;
 };
 
 struct Series{
@@ -46,6 +44,7 @@ void menu_movie();
 void insert_movie(Movies *&, string, int, string, int);
 void show_movies(Movies *);
 void delete_a_movie(Movies *&, string);
+bool buscar_movie(Movies *,string);
 void menu_user();
 void insert_user(Users *&, string, int, string);
 void show_users(Users *);
@@ -53,7 +52,13 @@ void delete_a_user(Users *&, string);
 void menu_qualification_movie();
 void add_qualification_movie(Users *&, string, string, float);
 void show_qualification_movie(Users *, string);
-void delete_a_qualification_movie(Users *&, string, string);
+void delete_a_qualification_movie(Users *&, string , string);
+void top_5_qualifications_movies(Users *User);
+void menu_qualification_serie();
+void add_qualification_serie(Users *&, string, string, float);
+void show_qualification_serie(Users *, string);
+void delete_a_qualification_serie(Users *&, string , string);
+void top_5_qualifications_series(Users *User);
 bool buscar_user(Users *,string);
 void menu_series_general();
 void menu_series();
@@ -70,8 +75,8 @@ void show_chapters(Series *, string, string);
 void delete_a_chapter(Series *&, string , string, string);
 bool buscar_serie(Series *, string);
 bool buscar_season(Series *, string, string);
-void leerPeliculas(const std::string& nombreArchivo, Movies&);
-void leerUsuarios(const std::string& nombreArchivo, Users& );
+void leerPeliculas(const std::string& nombreArchivo, Movies*&);
+void leerUsuarios(const std::string& nombreArchivo, Users *&);
 void guardarPeliculasEnArchivo(Movies* Movie, const std::string& nombreArchivo);
 void guardarUsuariosEnArchivo(Users* User, const std::string& nombreArchivo);
 Movies *Movie = NULL;
@@ -116,9 +121,9 @@ void guardarUsuariosEnArchivo(Users* user, const std::string& nombreArchivo) {
 
 int main(){
     std::string nombreArchivo = "Peliculas.txt"; 
-    leerPeliculas(nombreArchivo, *Movie);
+    leerPeliculas(nombreArchivo, Movie);
     std::string nombreArchivo2 = "Usuarios.txt";
-    leerUsuarios(nombreArchivo2, *User);
+    leerUsuarios(nombreArchivo2, User);
     int option;
     do{
         cout<<"\n\tMENU\n";
@@ -253,7 +258,7 @@ void delete_a_movie(Movies *&Movie, string n){
     }
 }
 //lectura de archivos
-void leerPeliculas(const std::string& nombreArchivo, Movies& lista) {
+void leerPeliculas(const std::string& nombreArchivo, Movies *&Movie) {
     std::ifstream archivo(nombreArchivo);
     std::string linea;
     int yr; int duracion; string nombre; string genero; 
@@ -275,7 +280,7 @@ void leerPeliculas(const std::string& nombreArchivo, Movies& lista) {
     }
     archivo.close();
 }
-void leerUsuarios(const std::string& nombreArchivo, Users& lista){
+void leerUsuarios(const std::string& nombreArchivo, Users*& User){
     std::ifstream archivo(nombreArchivo);    
     std::string linea;
     int edad; string mail; string pais;
@@ -332,15 +337,14 @@ void menu_user(){
                 if(option==1){
                     menu_qualification_movie();
                 }
-                else if (option==2){
-                    
+                else if(option==2){
+                    menu_qualification_serie();
                 }
-                
                 break;
     }
 }
 
-void insert_user(Users *&Movie, string m, int a, string c){
+void insert_user(Users *&User, string m, int a, string c){
     Users *new_user = new Users;
     new_user -> mail = m;
     new_user -> age = a;
@@ -353,13 +357,15 @@ void insert_user(Users *&Movie, string m, int a, string c){
         aux1 = aux1 -> next;
     }
 
-    if(Movie == aux1){
-        Movie = new_user;
+    if(User == aux1){
+        User = new_user;
     }
     else{
         aux2 -> next = new_user;
     }
     new_user -> next = aux1;
+    new_user -> qualifications_movies = aux1;
+    new_user -> qualifications_series = aux1;
 }
 
 void show_users(Users *User){
@@ -417,36 +423,44 @@ void menu_qualification_movie(){
                 if((buscar_user(User,mail_user)) == true){
                     cout<<"Escriba la pelicula a la que le quiera hacer la calificacion\n";
                     getline(cin,name_movie);
-                    cout<<"Calificacion (0.0 al 5.0)\n";
-                    cin>>score;
-                    if((score>(0))and(score<(5))){
-                        add_qualification_movie(User,mail_user,name_movie,score);
+                    if((buscar_movie(Movie,name_movie)) == true){
+                        cout<<"Calificacion (0.0 al 5.0)\n";
+                        cin>>score;
+                        if((score>(-0.1))and(score<(5.1))){
+                            add_qualification_movie(User,mail_user,name_movie,score);
+                        }
+                        else{
+                            cout<<"Calificacion fuera de rango";
+                        }
                     }
                     else{
-                        cout<<"Calificacion fuera de rango";
+                    cout<<"No hay ninguna pelicula con ese nombre\n";
                     }
                 }
                 else{
                     cout<<"No hay ningun usuario con ese mail\n";
                 }
                 break;
+        
+        case 2: 
+                break;
 
         case 3: cout<<"Escriba su mail de usuario\n";
                 getline(cin,mail_user);
-                if((buscar_user(User,mail_user)) == true){
-                    show_qualification_movie(User,mail_user);
-                }
-                else{
-                    cout<<"No hay ningun usuario con ese mail\n";
-                }
+                show_qualification_movie(User,mail_user);
                 break;
 
         case 4: cout<<"Escriba su mail de usuario\n";
                 getline(cin,mail_user);
                 if((buscar_user(User,mail_user)) == true){
-                    cout<<"Escriba la pelicula a la cual quiere eliminar su califiacion\n";
+                    cout<<"Escriba el nombre de la pelicula a la cual quiere eliminar su calificacion\n";
                     getline(cin,name_movie);
-                    delete_a_qualification_movie(User, mail_user,name_movie);
+                    if((buscar_movie(Movie,name_movie)) == true){
+                        delete_a_qualification_movie(User, mail_user, name_movie);
+                    }
+                    else{
+                        cout<<"No hay ninguna pelicula con ese nombre";
+                    }
                 }
                 else{
                     cout<<"No hay ningun usuario con ese mail\n";
@@ -461,25 +475,40 @@ void add_qualification_movie(Users *&User, string m, string n, float s){
     new_qualification -> score = s;
     Users *aux1 = User;
     Users *aux2;
+    bool bandera=false;
     while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
         aux2 = aux1;
         aux1 = aux1 -> next;
     }
-    aux2 = aux1 -> qualifications;
-    if(aux2==NULL){
-        aux1 -> qualifications = new_qualification;
-        new_qualification -> qualifications = aux2;
+    aux2 = aux1 -> qualifications_movies;
+    while(aux2 != NULL){
+        if((aux2 -> name)==n){
+            bandera = true;
+        }
+        aux2 = aux2 -> qualifications_movies;
+    }
+    aux2 = aux1 -> qualifications_movies;
+    if(bandera == false){
+        if(aux2==NULL){
+        aux1 -> qualifications_movies = new_qualification;
+        new_qualification -> qualifications_movies = aux2;
+        }
+        else{
+            while(aux2 != NULL){
+                aux1 = aux2;
+                aux2 = aux2 -> qualifications_movies;
+            }
+            aux1 -> qualifications_movies = new_qualification;
+            new_qualification -> qualifications_movies = aux2;
+        }
+        cout<<"Agregado exitosamente\n";
+        cout<<"\n";
     }
     else{
-        while(aux2 != NULL){
-            aux1 = aux2;
-            aux2 = aux2 -> qualifications;
-        }
-        aux1 -> qualifications = new_qualification;
-        new_qualification -> qualifications = aux2;
+        cout<<"Ya realizaste una calificacion sobre esta pelicula\n";
+        cout<<"\n";
     }
-    cout<<"Agregado exitosamente\n";
-    cout<<"\n";
+
 }
 
 void show_qualification_movie(Users *User, string m){
@@ -488,12 +517,12 @@ void show_qualification_movie(Users *User, string m){
     while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
         aux1 = aux1 -> next;
     }
-    aux1 = aux1 -> qualifications;
+    aux1 = aux1 -> qualifications_movies;
     while(aux1 != NULL){
         cout<<"\n";
         cout<<"Pelicula: "<<aux1 -> name<<"\n";
         cout<<"Calificacion: "<<aux1 -> score<<"\n";
-        aux1 = aux1 -> qualifications;
+        aux1 = aux1 -> qualifications_movies;
     }
 }
 
@@ -506,24 +535,175 @@ void delete_a_qualification_movie(Users *&User, string m, string n){
             aux2 = aux1;
             aux1 = aux1 -> next;
         }
+        aux2 = aux1 -> qualifications_movies;
         aux3 = aux2;
         while(((aux2 -> name)!= n )&&((aux1 != NULL))){
             aux3 = aux2;
-            aux2 = aux2 -> qualifications;
+            aux2 = aux2 -> qualifications_movies;
         }
         if(aux2==aux3){
-            aux2 = aux2 -> qualifications;
-            aux1 -> qualifications = aux2;
+            aux2 = aux2 -> qualifications_movies;
+            aux1 -> qualifications_movies = aux2;
             delete aux3;
         }
         else{
-            aux3 -> qualifications = aux2 -> qualifications;
+            aux3 -> qualifications_movies = aux2 -> qualifications_movies;
             delete aux2;
         }
         cout<<"Eliminado exitosamente\n";
         cout<<"\n";
     }
 }
+
+void menu_qualification_serie(){
+    int option;
+    float score;
+    string mail_user, name_serie;
+    cout<<"----------Series------------\n";
+    cout<<"1.Agregar una calificacion\n";
+    cout<<"2.Top 5 mejores calificadas\n";
+    cout<<"3. Mostrar calificaciones\n";
+    cout<<"4. Eliminar una calificacion\n";
+    cin>>option;
+    cin.ignore(1000,'\n');
+    switch(option){
+        case 1: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba la serie a la que le quiera hacer la calificacion\n";
+                    getline(cin,name_serie);
+                    if((buscar_serie(Serie,name_serie)) == true){
+                        cout<<"Calificacion (0.0 al 5.0)\n";
+                        cin>>score;
+                        if((score>(-0.1))and(score<(5.1))){
+                            add_qualification_serie(User,mail_user,name_serie,score);
+                        }
+                        else{
+                            cout<<"Calificacion fuera de rango";
+                        }
+                    }
+                    else{
+                    cout<<"No hay ninguna serie con ese nombre\n";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+        
+        case 2: 
+                break;
+
+        case 3: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                show_qualification_serie(User,mail_user);
+                break;
+
+        case 4: cout<<"Escriba su mail de usuario\n";
+                getline(cin,mail_user);
+                if((buscar_user(User,mail_user)) == true){
+                    cout<<"Escriba el nombre de la pelicula a la cual quiere eliminar su calificacion\n";
+                    getline(cin,name_serie);
+                    if((buscar_serie(Serie,name_serie)) == true){
+                        delete_a_qualification_serie(User, mail_user, name_serie);
+                    }
+                    else{
+                        cout<<"No hay ninguna serie con ese nombre";
+                    }
+                }
+                else{
+                    cout<<"No hay ningun usuario con ese mail\n";
+                }
+                break;
+    }
+}
+
+void add_qualification_serie(Users *&User, string m, string n, float s){
+    Users *new_qualification = new Users;
+    new_qualification -> name = n;
+    new_qualification -> score = s;
+    Users *aux1 = User;
+    Users *aux2;
+    bool bandera=false;
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux2 = aux1;
+        aux1 = aux1 -> next;
+    }
+    aux2 = aux1 -> qualifications_series;
+    while(aux2 != NULL){
+        if((aux2 -> name)==n){
+            bandera = true;
+        }
+        aux2 = aux2 -> qualifications_series;
+    }
+    aux2 = aux1 -> qualifications_series;
+    if(bandera == false){
+        if(aux2==NULL){
+        aux1 -> qualifications_series = new_qualification;
+        new_qualification -> qualifications_series = aux2;
+        }
+        else{
+            while(aux2 != NULL){
+                aux1 = aux2;
+                aux2 = aux2 -> qualifications_series;
+            }
+            aux1 -> qualifications_series = new_qualification;
+            new_qualification -> qualifications_series = aux2;
+        }
+        cout<<"Agregado exitosamente\n";
+        cout<<"\n";
+    }
+    else{
+        cout<<"Ya realizaste una calificacion sobre esta pelicula\n";
+        cout<<"\n";
+    }
+
+}
+
+void show_qualification_serie(Users *User, string m){
+    Users *aux1 = User;
+    
+    while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+        aux1 = aux1 -> next;
+    }
+    aux1 = aux1 -> qualifications_series;
+    while(aux1 != NULL){
+        cout<<"\n";
+        cout<<"Serie: "<<aux1 -> name<<"\n";
+        cout<<"Calificacion: "<<aux1 -> score<<"\n";
+        aux1 = aux1 -> qualifications_series;
+    }
+}
+
+void delete_a_qualification_serie(Users *&User, string m, string n){
+    if (User!=NULL){
+        Users *aux1 = User;
+        Users *aux2,*aux3;
+
+        while(((aux1 -> mail)!= m )&&((aux1 != NULL))){
+            aux2 = aux1;
+            aux1 = aux1 -> next;
+        }
+        aux2 = aux1 -> qualifications_series;
+        aux3 = aux2;
+        while(((aux2 -> name)!= n )&&((aux1 != NULL))){
+            aux3 = aux2;
+            aux2 = aux2 -> qualifications_series;
+        }
+        if(aux2==aux3){
+            aux2 = aux2 -> qualifications_series;
+            aux1 -> qualifications_series = aux2;
+            delete aux3;
+        }
+        else{
+            aux3 -> qualifications_series = aux2 -> qualifications_series;
+            delete aux2;
+        }
+        cout<<"Eliminado exitosamente\n";
+        cout<<"\n";
+    }
+}
+
 
 //Parte series
 void menu_series_general(){
@@ -996,6 +1176,25 @@ bool buscar_user(Users *User,string n){
     
     while(p!=NULL){
         if(p->mail==n){
+            bandera = true;
+        }
+        p=p->next;
+    }
+
+    if(bandera){
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+bool buscar_movie(Movies *Movie,string n){
+    bool bandera = false;
+    Movies *p = Movie;
+    
+    while(p!=NULL){
+        if(p->name_movie==n){
             bandera = true;
         }
         p=p->next;
