@@ -194,8 +194,8 @@ void menu_movie(){
                 cout<<"escriba su año de lanzamiento\n";
                 cin>>year;
             //manejo de errores y verificacion d datos.
-                if (year < 1888 || year > 2024) {
-                    cout << "Año invalido. Introduzca un año entre 1888 y 2024.\n";
+                if (year < 1888 || year > 2025) {
+                    cout << "Año invalido. Introduzca un año entre 1888 y 2025.\n";
                     return;
                 }
                 cin.ignore(1000,'\n');
@@ -249,9 +249,9 @@ void show_movies(Movies *Movie){
     Movies *aux1 = Movie;
     while(aux1 != NULL){
         cout<<aux1 -> name_movie<<"\n";
-        cout<<aux1 -> year_released<<"\n";
+        cout<<"año: "; cout<<aux1 -> year_released<<"\n";
         cout<<aux1 -> genre<<"\n";
-        cout<<aux1 -> length<<"\n";
+        cout<<aux1 -> length; cout<<" minutos"<<"\n";
         cout<<"\n";
         aux1 = aux1 -> next;
     }
@@ -459,7 +459,7 @@ void menu_qualification_movie(){
                     if((buscar_movie(Movie,name_movie)) == true){
                         cout<<"Calificacion (0.0 al 5.0)\n";
                         cin>>score;
-                        if((score>(-0.1))and(score<(5.1))){
+                        if((score>(-0.1))&&(score<(5.1))){
                             add_qualification_movie(User,mail_user,name_movie,score);
                         }
                         else{
@@ -608,7 +608,7 @@ void menu_qualification_serie(){
                     if((buscar_serie(Serie,name_serie)) == true){
                         cout<<"Calificacion (0.0 al 5.0)\n";
                         cin>>score;
-                        if((score>(-0.1))and(score<(5.1))){
+                        if((score>(-0.1))&&(score<(5.1))){
                             add_qualification_serie(User,mail_user,name_serie,score);
                         }
                         else{
